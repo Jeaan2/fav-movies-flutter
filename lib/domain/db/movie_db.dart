@@ -28,18 +28,19 @@ class MovieDB {
     print("db $path");
 
     var db = await openDatabase(path, version: 1, onCreate: _onCreate);
+    return db;
   }
 
-  void _onCreate(Database db, int NewVersion) async {
+  void _onCreate(Database db, int newVersion) async {
     await db.execute(
-        'CREATE TABLE movie(id INTEGER PRIMARY KEY, title TEXT, pathBackdrop TEXT, pathPoster TEXT,'
-        'overview TEXT, releaseDate TEXT)');
+        'CREATE TABLE movie(id INTEGER PRIMARY KEY, title TEXT, backdrop_path TEXT, poster_path TEXT,'
+        'overview TEXT, release_date TEXT)');
   }
 
   Future<int> saveMovie(Movie movie) async {
     var dbClient = await db;
     final sql =
-        'insert or replace into movie (id,title,pathBackdrop,pathPoster,overview, releaseDate) VALUES '
+        'insert or replace into movie (id,title,backdrop_path,poster_path,overview, release_date) VALUES '
         '(?,?,?,?,?,?)';
     print(sql);
     var id = await dbClient.rawInsert(sql, [
@@ -51,15 +52,16 @@ class MovieDB {
       movie.releaseDate
     ]);
     print('id: $id');
+    print('movie: $movie');
     return id;
   }
 
-  Future<List<Map>> getAllMovies() async {
+  Future<List<Movie>> getAllMovies() async {
     final dbClient = await db;
 
     final result = await dbClient.rawQuery('select * from movie');
-
-    return result.toList();
+    final movies = result.map<Movie>((json) => Movie.fromJson(json)).toList();
+    return movies;
   }
 
   Future<int> getCount() async {

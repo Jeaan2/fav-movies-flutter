@@ -110,7 +110,18 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
   Future _onClickFav(BuildContext context, movie) async {
       final db = MovieDB.getInstance();
 
-      print("Filme salvo! movies");
+      final exists = await db.exists(movie);
+
+      if(exists) {
+        db.deleteMovie(movie.id);
+      } else {
+        int id = await db.saveMovie(movie);
+
+        print("Filme salvo! $id");
+      }
+
+
+
   }
 }
 

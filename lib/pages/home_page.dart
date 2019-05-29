@@ -1,3 +1,4 @@
+import 'package:fav_movies/domain/db/movie_db.dart';
 import 'package:fav_movies/domain/movie.dart';
 import 'package:fav_movies/domain/services/movies_service.dart';
 import 'package:fav_movies/pages/movie_details_page.dart';
@@ -8,7 +9,6 @@ import 'package:fav_movies/utils/nav.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
 class HomePage extends StatefulWidget {
   @override
   _HomePageState createState() => _HomePageState();
@@ -16,7 +16,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
-
   TabController _tabController;
 
   @override
@@ -24,7 +23,6 @@ class _HomePageState extends State<HomePage>
     _tabController = new TabController(length: 2, vsync: this);
 
     super.initState();
-
   }
 
   @override
@@ -67,9 +65,9 @@ class _HomePageState extends State<HomePage>
       future: movies,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-            return Center(
-              child: CircularProgressIndicator(),
-            );
+          return Center(
+            child: CircularProgressIndicator(),
+          );
         }
         return _staggeredGridViewBody(snapshot.data);
       },
@@ -77,41 +75,49 @@ class _HomePageState extends State<HomePage>
   }
 
   _gridViewFavMoviesBody(BuildContext context, String s) {
-   //TODO get movies from preferences
+    //TODO get movies from preferences
+    Future<List<Movie>> favMovies = MovieDB.getInstance().getAllMovies();
 
-    return Center(
-      child: CircularProgressIndicator(),
+    return FutureBuilder<List<Movie>>(
+      future: favMovies,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+        return _staggeredGridViewBody(snapshot.data);
+      },
     );
   }
 
   _staggeredGridViewBody(List<Movie> data) {
     return StaggeredGridView.countBuilder(
       crossAxisCount: 4,
-        itemCount: data.length,
-        itemBuilder: (context, idc) {
+      itemCount: data.length,
+      itemBuilder: (context, idc) {
         return InkWell(
           onTap: () {
-            push(context, MovieDetailsPage(movie: data[idc],));
+            push(
+                context,
+                MovieDetailsPage(
+                  movie: data[idc],
+                ));
           },
           child: Container(
             color: Colors.black54,
             child: CachedNetworkImage(
               imageUrl: IMAGE_URL_400 + data[idc].pathPoster,
               placeholder: (context, url) => Center(
-                child: CircularProgressIndicator(),
-              ),
+                    child: CircularProgressIndicator(),
+                  ),
               errorWidget: (context, url, error) => new Icon(Icons.error),
               fit: BoxFit.cover,
             ),
           ),
         );
-        },
+      },
       staggeredTileBuilder: (int index) => new StaggeredTile.extent(2, 300),
     );
   }
-
-
 }
-
-
-
